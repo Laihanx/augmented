@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Navigation | DLSJBC Campus Navigator</title>
+  <meta name="description" content="Prototype interface for setting up augmented reality navigation across the DLSJBC campus.">
+  <link rel="icon" type="image/png" href="assets/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #004aad;
+      --primary-strong: #003b8b;
+      --secondary: #f5f7fb;
+      --surface: #ffffff;
+      --text: #1f2933;
+      --muted: #65748b;
+      --success: #0f9d58;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Poppins", Arial, sans-serif;
+      color: var(--text);
+      background: #f8fafc;
+    }
+    a { color: inherit; text-decoration: none; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--primary); }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 26px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), #0073ff);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 14px 30px rgba(0, 74, 173, 0.18);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 36px rgba(0, 74, 173, 0.22);
+    }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 74, 173, 0.25);
+      background: transparent;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+    .btn-outline:hover {
+      background: rgba(0, 74, 173, 0.08);
+      border-color: rgba(0, 74, 173, 0.45);
+    }
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    h1 {
+      font-size: clamp(2rem, 3.2vw, 3rem);
+      margin-bottom: 18px;
+    }
+    p.lead {
+      color: var(--muted);
+      max-width: 720px;
+      margin-bottom: 42px;
+    }
+    .grid {
+      display: grid;
+      gap: 24px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 24px 28px 32px;
+    }
+    .card h2 {
+      font-size: 1.4rem;
+      margin-bottom: 22px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    select {
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      font-family: "Poppins", Arial, sans-serif;
+      font-size: 1rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+    select:focus {
+      outline: none;
+      border-color: rgba(0, 74, 173, 0.6);
+      box-shadow: 0 0 0 4px rgba(0, 116, 255, 0.12);
+    }
+    .permission-grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+    .permission {
+      border-radius: var(--radius);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      padding: 20px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #f8fafc;
+    }
+    .permission[data-enabled="true"] {
+      border-color: rgba(15, 157, 88, 0.45);
+      background: rgba(15, 157, 88, 0.12);
+    }
+    .permission h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .permission p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: rgba(0, 74, 173, 0.12);
+      color: var(--primary);
+    }
+    .permission[data-enabled="true"] .status-pill {
+      background: rgba(15, 157, 88, 0.18);
+      color: var(--success);
+    }
+    .start-nav {
+      margin-top: 32px;
+      width: 100%;
+      padding: 16px;
+      font-size: 1.05rem;
+    }
+    .info-card {
+      border: 1px solid rgba(0, 116, 255, 0.2);
+      background: rgba(0, 74, 173, 0.06);
+      color: #0f172a;
+    }
+    .info-card strong { color: var(--primary); }
+    .ar-preview {
+      position: relative;
+      height: 420px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(0, 74, 173, 0.08), rgba(0, 74, 173, 0.02));
+      border: 1px dashed rgba(0, 74, 173, 0.3);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 36px;
+      color: var(--muted);
+    }
+    .ar-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: calc(var(--radius) - 6px);
+      display: none;
+    }
+    .ar-preview video.active { display: block; }
+    .ar-preview .placeholder {
+      display: grid;
+      gap: 12px;
+    }
+    .ar-preview strong {
+      display: block;
+      color: var(--primary);
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+    .instruction-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+      color: var(--muted);
+      counter-reset: steps;
+    }
+    .instruction-list li {
+      list-style: none;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      padding: 16px 20px;
+      position: relative;
+      padding-left: 58px;
+    }
+    .instruction-list li::before {
+      counter-increment: steps;
+      content: counter(steps);
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #0073ff);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    #nav-status {
+      margin-top: 18px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    #nav-status.success { color: var(--success); }
+    #destination-info { margin-top: 24px; line-height: 1.6; color: var(--muted); }
+    #destination-info strong { color: #0f172a; }
+    .reading {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    footer {
+      padding: 28px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    @media (min-width: 768px) {
+      .permission-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 767px) {
+      nav { display: none; }
+      .nav { padding: 16px; }
+      .card { padding: 22px 20px 28px; }
+      .permission { padding: 18px 18px; }
+      .instruction-list li { padding-left: 54px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <a class="brand" href="index.html">DLSJBC Campus Navigator</a>
+      <nav>
+        <a href="index.html#features">Features</a>
+        <a href="map.html">Map</a>
+        <a href="index.html#how-it-works">How It Works</a>
+      </nav>
+      <a class="btn-primary" href="map.html">Back to Map</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>AR Navigation</h1>
+    <p class="lead">Prototype walkthrough for the augmented reality navigation flow. Select a campus location, confirm permissions, and preview the AR guidance overlay.</p>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Setup Navigation</h2>
+        <label for="destination-select">Select Destination</label>
+        <select id="destination-select" aria-label="Select destination">
+          <option value="" selected disabled>Choose where you want to go</option>
+        </select>
+
+        <div id="destination-info" role="status" aria-live="polite"></div>
+
+        <div class="permission-grid" aria-label="Permission status">
+          <div class="permission" id="camera-card" data-enabled="false">
+            <div>
+              <h3>Camera Access</h3>
+              <p>Required for the live AR overlay.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span class="status-pill" id="camera-status">Disabled</span>
+              <button class="btn-outline" id="camera-btn" type="button">Enable Camera</button>
+            </div>
+          </div>
+          <div class="permission" id="location-card" data-enabled="false">
+            <div>
+              <h3>GPS Location</h3>
+              <p>Required to calculate directions.</p>
+              <p class="reading" id="location-reading" aria-live="polite"></p>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span class="status-pill" id="location-status">Disabled</span>
+              <button class="btn-outline" id="location-btn" type="button">Enable GPS</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary start-nav" id="start-btn" type="button">Start AR Navigation</button>
+        <div id="nav-status" role="alert"></div>
+      </div>
+
+      <div class="card info-card">
+        <h2>AR Camera Preview</h2>
+        <div class="ar-preview">
+          <video id="camera-view" playsinline autoplay muted></video>
+          <div id="camera-placeholder" class="placeholder">
+            <strong>AR Camera View Placeholder</strong>
+            <p>When navigation begins, this space displays the live camera feed with directional overlays guiding you to your destination.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 28px;">
+      <h2>How to Use AR Navigation</h2>
+      <ol class="instruction-list">
+        <li>Select your destination from the dropdown menu.</li>
+        <li>Allow camera access so the app can display directional overlays.</li>
+        <li>Enable GPS permissions for turn-by-turn positioning.</li>
+        <li>Tap Start to begin navigating and follow the arrows in real space.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <small>&copy; 2024 DLSJBC Campus Navigator. All rights reserved.</small>
+  </footer>
+
+  <script>
+    const locations = [
+      { id: "1", name: "Main Building", description: "Central administrative offices and classrooms", floor: "1-4", hours: "7:00 AM - 8:00 PM" },
+      { id: "2", name: "Registrar's Office", description: "Student records, enrollment, and registration services", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
+      { id: "3", name: "Library", description: "Multi-level academic library with study areas", floor: "1-3", hours: "7:00 AM - 9:00 PM" },
+      { id: "4", name: "Cafeteria", description: "Student dining hall and food services", hours: "6:30 AM - 7:00 PM" },
+      { id: "5", name: "Computer Laboratory", description: "Tech labs with modern workstations", floor: "2nd Floor, Building B", hours: "8:00 AM - 6:00 PM" },
+      { id: "6", name: "Student Affairs Office", description: "Student services, organizations, and activities", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
+      { id: "7", name: "Chapel", description: "Campus chapel for worship and reflection", hours: "6:00 AM - 6:00 PM" },
+      { id: "8", name: "Gymnasium", description: "Sports and physical education facility", hours: "6:00 AM - 8:00 PM" }
+    ];
+
+    const selectEl = document.getElementById("destination-select");
+    const infoEl = document.getElementById("destination-info");
+    const cameraCard = document.getElementById("camera-card");
+    const cameraBtn = document.getElementById("camera-btn");
+    const cameraStatus = document.getElementById("camera-status");
+    const cameraView = document.getElementById("camera-view");
+    const cameraPlaceholder = document.getElementById("camera-placeholder");
+    const locationCard = document.getElementById("location-card");
+    const locationBtn = document.getElementById("location-btn");
+    const locationStatus = document.getElementById("location-status");
+    const locationReading = document.getElementById("location-reading");
+    const startBtn = document.getElementById("start-btn");
+    const navStatus = document.getElementById("nav-status");
+
+    let cameraStream = null;
+    let locationWatchId = null;
+
+    function setNavStatus(message = "", isSuccess = false) {
+      navStatus.textContent = message;
+      if (isSuccess) {
+        navStatus.classList.add("success");
+      } else {
+        navStatus.classList.remove("success");
+      }
+    }
+
+    function populateOptions() {
+      locations.forEach(loc => {
+        const option = document.createElement("option");
+        option.value = loc.id;
+        option.textContent = loc.name;
+        selectEl.append(option);
+      });
+    }
+
+    function updateInfo(id) {
+      const destination = locations.find(loc => loc.id === id);
+      if (!destination) {
+        infoEl.textContent = "";
+        return;
+      }
+      const parts = [destination.description];
+      if (destination.floor) parts.push(`Floor: ${destination.floor}`);
+      if (destination.hours) parts.push(`Hours: ${destination.hours}`);
+      infoEl.innerHTML = `<strong>Destination:</strong> ${destination.name}<br>${parts.join("<br>")}`;
+    }
+
+    function setPermissionState(card, pill, enabled) {
+      card.dataset.enabled = String(enabled);
+      pill.textContent = enabled ? "Enabled" : "Disabled";
+    }
+
+    function disableCameraStream(message) {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      cameraView.srcObject = null;
+      cameraView.classList.remove("active");
+      cameraPlaceholder.hidden = false;
+      setPermissionState(cameraCard, cameraStatus, false);
+      cameraBtn.disabled = false;
+      cameraBtn.textContent = "Enable Camera";
+      if (message) {
+        setNavStatus(message);
+      }
+    }
+
+    async function toggleCamera() {
+      if (cameraCard.dataset.enabled === "true") {
+        disableCameraStream("Camera access disabled.");
+        return;
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setNavStatus("Camera access is not supported in this browser.");
+        return;
+      }
+      cameraBtn.disabled = true;
+      cameraBtn.textContent = "Enabling...";
+      setNavStatus("");
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        cameraStream = stream;
+        cameraView.srcObject = stream;
+        cameraView.classList.add("active");
+        cameraPlaceholder.hidden = true;
+        setPermissionState(cameraCard, cameraStatus, true);
+        cameraBtn.textContent = "Disable Camera";
+        setNavStatus("Camera access enabled.");
+      } catch (error) {
+        disableCameraStream(`Camera error: ${error.message}`);
+      } finally {
+        if (cameraCard.dataset.enabled === "true") {
+          cameraBtn.textContent = "Disable Camera";
+        } else {
+          cameraBtn.textContent = "Enable Camera";
+        }
+        cameraBtn.disabled = false;
+      }
+    }
+
+    function disableLocationTracking(message) {
+      if (locationWatchId !== null && navigator.geolocation && typeof navigator.geolocation.clearWatch === "function") {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null;
+      }
+      setPermissionState(locationCard, locationStatus, false);
+      locationReading.textContent = "";
+      locationBtn.disabled = false;
+      locationBtn.textContent = "Enable GPS";
+      if (message) {
+        setNavStatus(message);
+      }
+    }
+
+    function toggleLocation() {
+      if (locationCard.dataset.enabled === "true") {
+        disableLocationTracking("GPS tracking disabled.");
+        return;
+      }
+      if (!navigator.geolocation) {
+        setNavStatus("Geolocation is not supported in this browser.");
+        return;
+      }
+      locationBtn.disabled = true;
+      locationBtn.textContent = "Requesting...";
+      setNavStatus("");
+      try {
+        locationWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            const firstFix = locationCard.dataset.enabled !== "true";
+            if (firstFix) {
+              setPermissionState(locationCard, locationStatus, true);
+              setNavStatus("GPS tracking enabled.");
+            }
+            locationBtn.disabled = false;
+            locationBtn.textContent = "Disable GPS";
+            locationReading.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)} (±${Math.round(accuracy)}m)`;
+          },
+          (error) => {
+            disableLocationTracking(`Location error: ${error.message}`);
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+      } catch (error) {
+        disableLocationTracking(`Location error: ${error.message}`);
+      }
+    }
+
+    cameraBtn.addEventListener("click", toggleCamera);
+    locationBtn.addEventListener("click", toggleLocation);
+
+    selectEl.addEventListener("change", () => {
+      updateInfo(selectEl.value);
+      setNavStatus("");
+    });
+
+    startBtn.addEventListener("click", () => {
+      const hasDestination = selectEl.value !== "";
+      const cameraReady = cameraCard.dataset.enabled === "true";
+      const locationReady = locationCard.dataset.enabled === "true";
+
+      if (!hasDestination) {
+        setNavStatus("Select a destination to begin.");
+        return;
+      }
+      if (!cameraReady || !locationReady) {
+        setNavStatus("Enable camera and GPS permissions to continue.");
+        return;
+      }
+      setNavStatus("AR Navigation simulated — follow the on-screen arrows!", true);
+    });
+
+    populateOptions();
+    const params = new URLSearchParams(window.location.search);
+    const initialDestination = params.get("destination");
+    if (initialDestination && locations.some(loc => loc.id === initialDestination)) {
+      selectEl.value = initialDestination;
+      updateInfo(initialDestination);
+    }
+
+    window.addEventListener("beforeunload", () => {
+      disableCameraStream();
+      disableLocationTracking();
+    });
+  </script>
+</body>
+</html>
