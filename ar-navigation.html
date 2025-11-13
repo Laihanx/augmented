@@ -1,579 +1,1044 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Navigation | DLSJBC Campus Navigator</title>
-  <meta name="description" content="Prototype interface for setting up augmented reality navigation across the DLSJBC campus.">
-  <link rel="icon" type="image/png" href="assets/logo.jpg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #004aad;
-      --primary-strong: #003b8b;
-      --secondary: #f5f7fb;
-      --surface: #ffffff;
-      --text: #1f2933;
-      --muted: #65748b;
-      --success: #0f9d58;
-      --radius: 18px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Poppins", Arial, sans-serif;
-      color: var(--text);
-      background: #f8fafc;
-    }
-    a { color: inherit; text-decoration: none; }
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-    .nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .brand {
-      font-weight: 700;
-      color: var(--primary);
-      font-size: 1.1rem;
-    }
-    nav {
-      display: flex;
-      gap: 20px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-    nav a:hover { color: var(--primary); }
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px 26px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(135deg, var(--primary), #0073ff);
-      color: #ffffff;
-      font-weight: 600;
-      box-shadow: 0 14px 30px rgba(0, 74, 173, 0.18);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 36px rgba(0, 74, 173, 0.22);
-    }
-    .btn-outline {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 10px 20px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 74, 173, 0.25);
-      background: transparent;
-      color: var(--primary);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, border 0.2s ease;
-    }
-    .btn-outline:hover {
-      background: rgba(0, 74, 173, 0.08);
-      border-color: rgba(0, 74, 173, 0.45);
-    }
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
-    }
-    h1 {
-      font-size: clamp(2rem, 3.2vw, 3rem);
-      margin-bottom: 18px;
-    }
-    p.lead {
-      color: var(--muted);
-      max-width: 720px;
-      margin-bottom: 42px;
-    }
-    .grid {
-      display: grid;
-      gap: 24px;
-    }
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-      padding: 24px 28px 32px;
-    }
-    .card h2 {
-      font-size: 1.4rem;
-      margin-bottom: 22px;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    select {
-      width: 100%;
-      padding: 16px 20px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(15, 23, 42, 0.14);
-      font-family: "Poppins", Arial, sans-serif;
-      font-size: 1rem;
-      transition: border 0.2s ease, box-shadow 0.2s ease;
-    }
-    select:focus {
-      outline: none;
-      border-color: rgba(0, 74, 173, 0.6);
-      box-shadow: 0 0 0 4px rgba(0, 116, 255, 0.12);
-    }
-    .permission-grid {
-      display: grid;
-      gap: 18px;
-      margin-top: 28px;
-    }
-    .permission {
-      border-radius: var(--radius);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      padding: 20px 24px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      background: #f8fafc;
-    }
-    .permission[data-enabled="true"] {
-      border-color: rgba(15, 157, 88, 0.45);
-      background: rgba(15, 157, 88, 0.12);
-    }
-    .permission h3 {
-      margin: 0;
-      font-size: 1.05rem;
-    }
-    .permission p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      background: rgba(0, 74, 173, 0.12);
-      color: var(--primary);
-    }
-    .permission[data-enabled="true"] .status-pill {
-      background: rgba(15, 157, 88, 0.18);
-      color: var(--success);
-    }
-    .start-nav {
-      margin-top: 32px;
-      width: 100%;
-      padding: 16px;
-      font-size: 1.05rem;
-    }
-    .info-card {
-      border: 1px solid rgba(0, 116, 255, 0.2);
-      background: rgba(0, 74, 173, 0.06);
-      color: #0f172a;
-    }
-    .info-card strong { color: var(--primary); }
-    .ar-preview {
-      position: relative;
-      height: 420px;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(0, 74, 173, 0.08), rgba(0, 74, 173, 0.02));
-      border: 1px dashed rgba(0, 74, 173, 0.3);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 36px;
-      color: var(--muted);
-    }
-    .ar-preview video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: calc(var(--radius) - 6px);
-      display: none;
-    }
-    .ar-preview video.active { display: block; }
-    .ar-preview .placeholder {
-      display: grid;
-      gap: 12px;
-    }
-    .ar-preview strong {
-      display: block;
-      color: var(--primary);
-      font-size: 1.1rem;
-      margin-bottom: 12px;
-    }
-    .instruction-list {
-      display: grid;
-      gap: 14px;
-      margin-top: 8px;
-      color: var(--muted);
-      counter-reset: steps;
-    }
-    .instruction-list li {
-      list-style: none;
-      border-radius: 12px;
-      background: #ffffff;
-      border: 1px solid rgba(15, 23, 42, 0.06);
-      padding: 16px 20px;
-      position: relative;
-      padding-left: 58px;
-    }
-    .instruction-list li::before {
-      counter-increment: steps;
-      content: counter(steps);
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), #0073ff);
-      color: #ffffff;
-      display: grid;
-      place-items: center;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    #nav-status {
-      margin-top: 18px;
-      font-weight: 600;
-      color: var(--muted);
-    }
-    #nav-status.success { color: var(--success); }
-    #destination-info { margin-top: 24px; line-height: 1.6; color: var(--muted); }
-    #destination-info strong { color: #0f172a; }
-    .reading {
-      margin-top: 10px;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    footer {
-      padding: 28px 24px;
-      text-align: center;
-      color: var(--muted);
-    }
-    @media (min-width: 768px) {
+﻿  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Navigation | DLSJBC Campus Navigator</title>
+    <meta name="description" content="Prototype interface for setting up augmented reality navigation across the DLSJBC campus.">
+    <link rel="icon" type="image/png" href="assets/logo.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary: #004aad;
+        --primary-strong: #003b8b;
+        --secondary: #f5f7fb;
+        --surface: #ffffff;
+        --text: #1f2933;
+        --muted: #65748b;
+        --success: #0f9d58;
+        --radius: 18px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Poppins", Arial, sans-serif;
+        color: var(--text);
+        background: #f8fafc;
+      }
+      a { color: inherit; text-decoration: none; }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      }
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 20px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .nav-links a:hover { color: var(--primary); }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: none;
+        border-radius: 999px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #0073ff);
+        color: #ffffff;
+        box-shadow: 0 14px 30px rgba(0, 74, 173, 0.18);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 36px rgba(0, 74, 173, 0.22);
+      }
+      .brand {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: cover;
+        display: inline-block;
+      }
+      nav {
+        display: flex;
+        gap: 20px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      nav a:hover { color: var(--primary); }
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 26px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--primary), #0073ff);
+        color: #ffffff;
+        font-weight: 600;
+        box-shadow: 0 14px 30px rgba(0, 74, 173, 0.18);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 36px rgba(0, 74, 173, 0.22);
+      }
+      .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 74, 173, 0.25);
+        background: transparent;
+        color: var(--primary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, border 0.2s ease;
+      }
+      .btn-outline:hover {
+        background: rgba(0, 74, 173, 0.08);
+        border-color: rgba(0, 74, 173, 0.45);
+      }
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+      h1 {
+        font-size: clamp(2rem, 3.2vw, 3rem);
+        margin-bottom: 18px;
+      }
+      p.lead {
+        color: var(--muted);
+        max-width: 720px;
+        margin-bottom: 42px;
+      }
+      .grid {
+        display: grid;
+        gap: 24px;
+      }
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        padding: 24px 28px 32px;
+      }
+      .card h2 {
+        font-size: 1.4rem;
+        margin-bottom: 22px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      select {
+        width: 100%;
+        padding: 16px 20px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        font-family: "Poppins", Arial, sans-serif;
+        font-size: 1rem;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+      }
+      select:focus {
+        outline: none;
+        border-color: rgba(0, 74, 173, 0.6);
+        box-shadow: 0 0 0 4px rgba(0, 116, 255, 0.12);
+      }
       .permission-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: grid;
+        gap: 18px;
+        margin-top: 28px;
       }
-    }
-    @media (max-width: 767px) {
-      nav { display: none; }
-      .nav { padding: 16px; }
-      .card { padding: 22px 20px 28px; }
-      .permission { padding: 18px 18px; }
-      .instruction-list li { padding-left: 54px; }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="nav">
-      <a class="brand" href="index.html">DLSJBC Campus Navigator</a>
-      <nav>
-        <a href="index.html#features">Features</a>
-        <a href="map.html">Map</a>
-        <a href="index.html#how-it-works">How It Works</a>
-      </nav>
-      <a class="btn-primary" href="map.html">Back to Map</a>
-    </div>
-  </header>
-
-  <main>
-    <h1>AR Navigation</h1>
-    <p class="lead">Prototype walkthrough for the augmented reality navigation flow. Select a campus location, confirm permissions, and preview the AR guidance overlay.</p>
-
-    <section class="grid">
-      <div class="card">
-        <h2>Setup Navigation</h2>
-        <label for="destination-select">Select Destination</label>
-        <select id="destination-select" aria-label="Select destination">
-          <option value="" selected disabled>Choose where you want to go</option>
-        </select>
-
-        <div id="destination-info" role="status" aria-live="polite"></div>
-
-        <div class="permission-grid" aria-label="Permission status">
-          <div class="permission" id="camera-card" data-enabled="false">
-            <div>
-              <h3>Camera Access</h3>
-              <p>Required for the live AR overlay.</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <span class="status-pill" id="camera-status">Disabled</span>
-              <button class="btn-outline" id="camera-btn" type="button">Enable Camera</button>
-            </div>
-          </div>
-          <div class="permission" id="location-card" data-enabled="false">
-            <div>
-              <h3>GPS Location</h3>
-              <p>Required to calculate directions.</p>
-              <p class="reading" id="location-reading" aria-live="polite"></p>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <span class="status-pill" id="location-status">Disabled</span>
-              <button class="btn-outline" id="location-btn" type="button">Enable GPS</button>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-primary start-nav" id="start-btn" type="button">Start AR Navigation</button>
-        <div id="nav-status" role="alert"></div>
-      </div>
-
-      <div class="card info-card">
-        <h2>AR Camera Preview</h2>
-        <div class="ar-preview">
-          <video id="camera-view" playsinline autoplay muted></video>
-          <div id="camera-placeholder" class="placeholder">
-            <strong>AR Camera View Placeholder</strong>
-            <p>When navigation begins, this space displays the live camera feed with directional overlays guiding you to your destination.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card" style="margin-top: 28px;">
-      <h2>How to Use AR Navigation</h2>
-      <ol class="instruction-list">
-        <li>Select your destination from the dropdown menu.</li>
-        <li>Allow camera access so the app can display directional overlays.</li>
-        <li>Enable GPS permissions for turn-by-turn positioning.</li>
-        <li>Tap Start to begin navigating and follow the arrows in real space.</li>
-      </ol>
-    </section>
-  </main>
-
-  <footer>
-    <small>&copy; 2024 DLSJBC Campus Navigator. All rights reserved.</small>
-  </footer>
-
-  <script>
-    const locations = [
-      { id: "1", name: "Main Building", description: "Central administrative offices and classrooms", floor: "1-4", hours: "7:00 AM - 8:00 PM" },
-      { id: "2", name: "Registrar's Office", description: "Student records, enrollment, and registration services", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
-      { id: "3", name: "Library", description: "Multi-level academic library with study areas", floor: "1-3", hours: "7:00 AM - 9:00 PM" },
-      { id: "4", name: "Cafeteria", description: "Student dining hall and food services", hours: "6:30 AM - 7:00 PM" },
-      { id: "5", name: "Computer Laboratory", description: "Tech labs with modern workstations", floor: "2nd Floor, Building B", hours: "8:00 AM - 6:00 PM" },
-      { id: "6", name: "Student Affairs Office", description: "Student services, organizations, and activities", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
-      { id: "7", name: "Chapel", description: "Campus chapel for worship and reflection", hours: "6:00 AM - 6:00 PM" },
-      { id: "8", name: "Gymnasium", description: "Sports and physical education facility", hours: "6:00 AM - 8:00 PM" }
-    ];
-
-    const selectEl = document.getElementById("destination-select");
-    const infoEl = document.getElementById("destination-info");
-    const cameraCard = document.getElementById("camera-card");
-    const cameraBtn = document.getElementById("camera-btn");
-    const cameraStatus = document.getElementById("camera-status");
-    const cameraView = document.getElementById("camera-view");
-    const cameraPlaceholder = document.getElementById("camera-placeholder");
-    const locationCard = document.getElementById("location-card");
-    const locationBtn = document.getElementById("location-btn");
-    const locationStatus = document.getElementById("location-status");
-    const locationReading = document.getElementById("location-reading");
-    const startBtn = document.getElementById("start-btn");
-    const navStatus = document.getElementById("nav-status");
-
-    let cameraStream = null;
-    let locationWatchId = null;
-
-    function setNavStatus(message = "", isSuccess = false) {
-      navStatus.textContent = message;
-      if (isSuccess) {
-        navStatus.classList.add("success");
-      } else {
-        navStatus.classList.remove("success");
+      .permission {
+        border-radius: var(--radius);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        padding: 20px 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        background: #f8fafc;
       }
-    }
-
-    function populateOptions() {
-      locations.forEach(loc => {
-        const option = document.createElement("option");
-        option.value = loc.id;
-        option.textContent = loc.name;
-        selectEl.append(option);
-      });
-    }
-
-    function updateInfo(id) {
-      const destination = locations.find(loc => loc.id === id);
-      if (!destination) {
-        infoEl.textContent = "";
-        return;
+      .permission[data-enabled="true"] {
+        border-color: rgba(15, 157, 88, 0.45);
+        background: rgba(15, 157, 88, 0.12);
       }
-      const parts = [destination.description];
-      if (destination.floor) parts.push(`Floor: ${destination.floor}`);
-      if (destination.hours) parts.push(`Hours: ${destination.hours}`);
-      infoEl.innerHTML = `<strong>Destination:</strong> ${destination.name}<br>${parts.join("<br>")}`;
-    }
+      .permission h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+      .permission p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: rgba(0, 74, 173, 0.12);
+        color: var(--primary);
+      }
+      .permission[data-enabled="true"] .status-pill {
+        background: rgba(15, 157, 88, 0.18);
+        color: var(--success);
+      }
+      .start-nav {
+        margin-top: 32px;
+        width: 100%;
+        padding: 16px;
+        font-size: 1.05rem;
+      }
+      .info-card {
+        border: 1px solid rgba(0, 116, 255, 0.2);
+        background: rgba(0, 74, 173, 0.06);
+        color: #0f172a;
+      }
+      .info-card strong { color: var(--primary); }
+      .ar-preview {
+        position: relative;
+        min-height: 460px;
+        height: clamp(360px, 60vw, 620px);
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, rgba(0, 74, 173, 0.08), rgba(0, 74, 173, 0.02));
+        border: 1px dashed rgba(0, 74, 173, 0.3);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 36px;
+        color: var(--muted);
+        overflow: hidden;
+      }
 
-    function setPermissionState(card, pill, enabled) {
-      card.dataset.enabled = String(enabled);
-      pill.textContent = enabled ? "Enabled" : "Disabled";
-    }
+      .ar-preview video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: calc(var(--radius) - 6px);
+        display: none;
+      }
 
-    function disableCameraStream(message) {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-      }
-      cameraView.srcObject = null;
-      cameraView.classList.remove("active");
-      cameraPlaceholder.hidden = false;
-      setPermissionState(cameraCard, cameraStatus, false);
-      cameraBtn.disabled = false;
-      cameraBtn.textContent = "Enable Camera";
-      if (message) {
-        setNavStatus(message);
-      }
-    }
+      .ar-preview video.active { display: block; }
 
-    async function toggleCamera() {
-      if (cameraCard.dataset.enabled === "true") {
-        disableCameraStream("Camera access disabled.");
-        return;
+      .ar-preview .placeholder {
+        display: grid;
+        gap: 12px;
+        padding: 20px;
       }
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setNavStatus("Camera access is not supported in this browser.");
-        return;
+
+      .ar-preview .placeholder strong {
+        display: block;
+        color: var(--primary);
+        font-size: 1.1rem;
+        margin-bottom: 8px;
       }
-      cameraBtn.disabled = true;
-      cameraBtn.textContent = "Enabling...";
-      setNavStatus("");
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        cameraStream = stream;
-        cameraView.srcObject = stream;
-        cameraView.classList.add("active");
-        cameraPlaceholder.hidden = true;
-        setPermissionState(cameraCard, cameraStatus, true);
-        cameraBtn.textContent = "Disable Camera";
-        setNavStatus("Camera access enabled.");
-      } catch (error) {
-        disableCameraStream(`Camera error: ${error.message}`);
-      } finally {
-        if (cameraCard.dataset.enabled === "true") {
-          cameraBtn.textContent = "Disable Camera";
-        } else {
-          cameraBtn.textContent = "Enable Camera";
+
+      .ar-preview .placeholder p {
+        display: block;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+      .instruction-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 8px;
+        color: var(--muted);
+        counter-reset: steps;
+      }
+      .instruction-list li {
+        list-style: none;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        padding: 16px 20px;
+        position: relative;
+        padding-left: 58px;
+      }
+      .instruction-list li::before {
+        counter-increment: steps;
+        content: counter(steps);
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), #0073ff);
+        color: #ffffff;
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      #nav-status {
+        margin-top: 18px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      #nav-status.success { color: var(--success); }
+      #destination-info { margin-top: 24px; line-height: 1.6; color: var(--muted); }
+      #destination-info strong { color: #0f172a; }
+      .reading {
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      footer {
+        padding: 28px 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+      @media (min-width: 768px) {
+        .permission-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+      }
+      @media (max-width: 767px) {
+        .nav-links { display: none; }
+        .nav-container { padding: 16px; }
+        .card { padding: 22px 20px 28px; }
+        .permission { padding: 18px 18px; }
+        .instruction-list li { padding-left: 54px; }
+
+        /* Responsive Improvements for Mobile */
+        .ar-preview {
+          min-height: 300px;
+          height: 50vh;
+          padding: 16px;
+          border-radius: 12px;
+        }
+
+        .ar-preview .placeholder {
+          gap: 8px;
+          padding: 12px;
+        }
+
+        .ar-preview .placeholder strong {
+          font-size: 1rem;
+        }
+
+        .ar-preview .placeholder p {
+          font-size: 0.85rem;
+          display: block;
+        }
+      }
+
+      /* Optional tweak for tablets (medium screens) */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .ar-preview {
+          min-height: 400px;
+          height: 55vh;
+          padding: 24px;
+        }
+
+        .ar-preview .placeholder strong {
+          font-size: 1.05rem;
+        }
+
+        .ar-preview .placeholder p {
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div id="site-nav-placeholder"></div>
+    </header>
+    <script>
+      (async () => {
+        try {
+          const res = await fetch('navigation.html');
+          if (res.ok) {
+            const html = await res.text();
+            const placeholder = document.getElementById('site-nav-placeholder');
+            placeholder.innerHTML = html;
+
+            // Mark active nav link after injecting fragment
+            const setNavActive = () => {
+              const nav = placeholder.querySelector('.nav-links');
+              if (!nav) return;
+              const links = Array.from(nav.querySelectorAll('a[data-page]'));
+              const path = window.location.pathname.split('/').pop() || 'index.html';
+              const currentPage = path === '' ? 'index' : path.replace('.html', '');
+
+              const pageHasHashLinks = links.some(l => l.getAttribute('data-page') === currentPage && l.getAttribute('data-hash'));
+
+              links.forEach(a => {
+                const page = a.getAttribute('data-page');
+                const hash = a.getAttribute('data-hash');
+                let active = false;
+
+                if (page === currentPage) {
+                  if (hash) {
+                    active = (window.location.hash === hash);
+                  } else {
+                    if (!pageHasHashLinks) {
+                      active = (window.location.hash === '' || window.location.hash === '#');
+                    } else {
+                      active = false;
+                    }
+                  }
+                }
+
+                if (active) a.setAttribute('data-active', 'true'); else a.removeAttribute('data-active');
+              });
+            };
+
+            setNavActive();
+            window.addEventListener('hashchange', setNavActive);
+            window.addEventListener('popstate', setNavActive);
+
+            // Attach nav toggle behavior for mobile
+            const attachNavToggle = () => {
+              const toggle = placeholder.querySelector('#nav-toggle');
+              const nav = placeholder.querySelector('.nav-links');
+              if (!toggle || !nav) return;
+              toggle.addEventListener('click', () => {
+                const isOpen = nav.getAttribute('data-open') === 'true';
+                nav.setAttribute('data-open', isOpen ? 'false' : 'true');
+                toggle.setAttribute('aria-expanded', String(!isOpen));
+              });
+              nav.querySelectorAll('a').forEach(a => {
+                a.addEventListener('click', () => {
+                  nav.setAttribute('data-open', 'false');
+                  toggle.setAttribute('aria-expanded', 'false');
+                });
+              });
+            };
+
+            attachNavToggle();
+          } else {
+            console.warn('Failed to load navigation fragment:', res.status);
+          }
+        } catch (e) {
+          console.warn('Navigation load error', e);
+        }
+      })();
+    </script>
+
+    <main>
+      <h1>AR Navigation</h1>
+      <p class="lead">Prototype walkthrough for the augmented reality navigation flow. Select a campus location, confirm permissions, and preview the AR guidance overlay.</p>
+
+      <section class="grid">
+        <div class="card">
+          <h2>Setup Navigation</h2>
+          <label for="destination-select">Select Destination</label>
+          <select id="destination-select" aria-label="Select destination">
+            <option value="" selected disabled>Choose where you want to go</option>
+          </select>
+
+          <div id="destination-info" role="status" aria-live="polite"></div>
+
+          <div class="permission-grid" aria-label="Permission status">
+            <div class="permission" id="camera-card" data-enabled="false">
+              <div>
+                <h3>Camera Access</h3>
+                <p>Required for the live AR overlay.</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span class="status-pill" id="camera-status">Disabled</span>
+                <button class="btn-outline" id="camera-btn" type="button">Enable Camera</button>
+                <button class="btn-outline" id="camera-switch" type="button" title="Switch camera" style="display:none;">Back</button>
+              </div>
+            </div>
+            <div class="permission" id="location-card" data-enabled="false">
+              <div>
+                <h3>GPS Location</h3>
+                <p>Required to calculate directions.</p>
+                <p class="reading" id="location-reading" aria-live="polite"></p>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span class="status-pill" id="location-status">Disabled</span>
+                <button class="btn-outline" id="location-btn" type="button">Enable GPS</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-primary start-nav" id="start-btn" type="button">Start AR Navigation</button>
+          <div id="nav-status" role="alert"></div>
+          <div id="ar-debug" aria-live="polite" style="margin-top:12px;font-size:0.9rem;color:#334;line-height:1.4;
+                      background:#f1f5f9;border:1px solid rgba(15,23,42,0.04);padding:10px;border-radius:10px;display:none;
+                      max-height:160px;overflow:auto"></div>
+        </div>
+
+        <div class="card info-card">
+          <h2>AR Camera Preview</h2>
+          <div class="ar-preview">
+              <video id="camera-view" playsinline autoplay muted></video>
+              <div id="mindar-container" style="width:100%; height:100%; position:relative; display:none;"></div>
+              <div id="camera-placeholder" class="placeholder">
+              <strong>AR Camera View Placeholder</strong>
+              <p>When navigation begins, this space displays the live camera feed with directional overlays guiding you to your destination.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 28px;">
+        <h2>How to Use AR Navigation</h2>
+        <ol class="instruction-list">
+          <li>Select your destination from the dropdown menu.</li>
+          <li>Allow camera access so the app can display directional overlays.</li>
+          <li>Enable GPS permissions for turn-by-turn positioning.</li>
+          <li>Tap Start to begin navigating and follow the arrows in real space.</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <small>&copy; 2025 DLSJBC Campus Navigator. All rights reserved.</small>
+    </footer>
+    <!-- Three.js and MindAR (image tracking) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/dist/mindar-image-three.prod.js"></script>    <script>
+      const locations = [
+        { id: "1", name: "Main Building", description: "Central administrative offices and classrooms", floor: "1-4", hours: "7:00 AM - 8:00 PM" },
+        { id: "2", name: "Registrar's Office", description: "Student records, enrollment, and registration services", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
+        { id: "3", name: "Library", description: "Multi-level academic library with study areas", floor: "1-3", hours: "7:00 AM - 9:00 PM" },
+        { id: "4", name: "Cafeteria", description: "Student dining hall and food services", hours: "6:30 AM - 7:00 PM" },
+        { id: "5", name: "Computer Laboratory", description: "Tech labs with modern workstations", floor: "2nd Floor, Building B", hours: "8:00 AM - 6:00 PM" },
+        { id: "6", name: "Student Affairs Office", description: "Student services, organizations, and activities", floor: "Ground Floor", hours: "8:00 AM - 5:00 PM" },
+        { id: "7", name: "Chapel", description: "Campus chapel for worship and reflection", hours: "6:00 AM - 6:00 PM" },
+        { id: "8", name: "Gymnasium", description: "Sports and physical education facility", hours: "6:00 AM - 8:00 PM" }
+      ];
+
+      const selectEl = document.getElementById("destination-select");
+      const infoEl = document.getElementById("destination-info");
+      const cameraCard = document.getElementById("camera-card");
+      const cameraBtn = document.getElementById("camera-btn");
+      const cameraStatus = document.getElementById("camera-status");
+      const cameraView = document.getElementById("camera-view");
+      const cameraPlaceholder = document.getElementById("camera-placeholder");
+      const locationCard = document.getElementById("location-card");
+      const locationBtn = document.getElementById("location-btn");
+      const locationStatus = document.getElementById("location-status");
+      const locationReading = document.getElementById("location-reading");
+      const startBtn = document.getElementById("start-btn");
+      const navStatus = document.getElementById("nav-status");
+
+      let cameraStream = null;
+      let locationWatchId = null;
+      let currentFacing = 'environment'; // 'environment' (back) or 'user' (front)
+
+      // Check if we're on HTTPS (required for camera on mobile in production)
+      function checkSecureContext() {
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          setARDebug('⚠️ Warning: Camera requires HTTPS. Current: ' + window.location.protocol);
+          return false;
+        }
+        return true;
+      }
+
+      function setNavStatus(message = "", isSuccess = false) {
+        navStatus.textContent = message;
+        if (isSuccess) {
+          navStatus.classList.add("success");
+        } else {
+          navStatus.classList.remove("success");
+        }
+      }
+
+      // AR debug helper: shows loader / verification messages in the page
+      function showARDebug() {
+        const el = document.getElementById('ar-debug');
+        if (el) el.style.display = 'block';
+      }
+      function setARDebug(message) {
+        try {
+          const el = document.getElementById('ar-debug');
+          if (!el) return;
+          showARDebug();
+          const now = new Date().toLocaleTimeString();
+          const row = document.createElement('div');
+          row.textContent = `[${now}] ${message}`;
+          el.appendChild(row);
+          // keep scroll at bottom
+          el.scrollTop = el.scrollHeight;
+        } catch (e) { console.debug('ARDebug error', e); }
+      }
+
+      function populateOptions() {
+        locations.forEach(loc => {
+          const option = document.createElement("option");
+          option.value = loc.id;
+          option.textContent = loc.name;
+          selectEl.append(option);
+        });
+      }
+
+      function updateInfo(id) {
+        const destination = locations.find(loc => loc.id === id);
+        if (!destination) {
+          infoEl.textContent = "";
+          return;
+        }
+        const parts = [destination.description];
+        if (destination.floor) parts.push(`Floor: ${destination.floor}`);
+        if (destination.hours) parts.push(`Hours: ${destination.hours}`);
+        infoEl.innerHTML = `<strong>Destination:</strong> ${destination.name}<br>${parts.join("<br>")}`;
+      }
+
+      function setPermissionState(card, pill, enabled) {
+        card.dataset.enabled = String(enabled);
+        pill.textContent = enabled ? "Enabled" : "Disabled";
+      }
+
+      function disableCameraStream(message) {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(track => track.stop());
+          cameraStream = null;
+        }
+        cameraView.srcObject = null;
+        cameraView.classList.remove("active");
+        cameraPlaceholder.hidden = false;
+        setPermissionState(cameraCard, cameraStatus, false);
         cameraBtn.disabled = false;
+        cameraBtn.textContent = "Enable Camera";
+        // hide switch control when camera disabled
+        const switchBtn = document.getElementById('camera-switch');
+        if (switchBtn) switchBtn.style.display = 'none';
+        if (message) {
+          setNavStatus(message);
+        }
       }
-    }
 
-    function disableLocationTracking(message) {
-      if (locationWatchId !== null && navigator.geolocation && typeof navigator.geolocation.clearWatch === "function") {
-        navigator.geolocation.clearWatch(locationWatchId);
-        locationWatchId = null;
-      }
-      setPermissionState(locationCard, locationStatus, false);
-      locationReading.textContent = "";
-      locationBtn.disabled = false;
-      locationBtn.textContent = "Enable GPS";
-      if (message) {
-        setNavStatus(message);
-      }
-    }
-
-    function toggleLocation() {
-      if (locationCard.dataset.enabled === "true") {
-        disableLocationTracking("GPS tracking disabled.");
-        return;
-      }
-      if (!navigator.geolocation) {
-        setNavStatus("Geolocation is not supported in this browser.");
-        return;
-      }
-      locationBtn.disabled = true;
-      locationBtn.textContent = "Requesting...";
-      setNavStatus("");
-      try {
-        locationWatchId = navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            const firstFix = locationCard.dataset.enabled !== "true";
-            if (firstFix) {
-              setPermissionState(locationCard, locationStatus, true);
-              setNavStatus("GPS tracking enabled.");
+      async function startPreview(facing = 'environment') {
+        currentFacing = facing;
+        
+        // Stop existing preview first
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(t => t.stop());
+          cameraStream = null;
+        }
+        
+        try {
+          setARDebug('Requesting ' + facing + ' camera...');
+          
+          let stream;
+          const strategies = [
+            { 
+              video: { 
+                facingMode: { exact: facing },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+              } 
+            },
+            { video: { facingMode: { exact: facing } } },
+            { video: { facingMode: facing } },
+            { video: true }
+          ];
+          
+          let lastError;
+          for (let i = 0; i < strategies.length; i++) {
+            try {
+              setARDebug('Trying camera strategy ' + (i + 1) + '/' + strategies.length);
+              stream = await navigator.mediaDevices.getUserMedia(strategies[i]);
+              if (stream) {
+                setARDebug('Camera strategy ' + (i + 1) + ' succeeded');
+                break;
+              }
+            } catch (err) {
+              lastError = err;
+              setARDebug('Strategy ' + (i + 1) + ' failed: ' + err.message);
+              if (i === strategies.length - 1) {
+                throw lastError;
+              }
             }
-            locationBtn.disabled = false;
-            locationBtn.textContent = "Disable GPS";
-            locationReading.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)} (±${Math.round(accuracy)}m)`;
-          },
-          (error) => {
-            disableLocationTracking(`Location error: ${error.message}`);
-          },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
-      } catch (error) {
-        disableLocationTracking(`Location error: ${error.message}`);
+          }
+          
+          if (!stream) {
+            throw lastError || new Error('Failed to get camera stream');
+          }
+          
+          cameraStream = stream;
+          
+          // Only show video preview if MindAR is not running
+          if (!mindarStarted) {
+            cameraView.srcObject = stream;
+            await cameraView.play();
+            cameraView.classList.add('active');
+            cameraPlaceholder.hidden = true;
+          }
+          
+          setPermissionState(cameraCard, cameraStatus, true);
+          cameraBtn.textContent = 'Disable Camera';
+          
+          const switchBtn = document.getElementById('camera-switch');
+          if (switchBtn) { 
+            switchBtn.style.display = 'inline-flex';
+            switchBtn.textContent = (facing === 'environment' ? '🔄 Front' : '🔄 Back');
+          }
+          
+          const track = stream.getVideoTracks()[0];
+          const settings = track.getSettings();
+          setARDebug('Camera active: ' + (settings.facingMode || 'unknown') + ' facing, ' + 
+                     (settings.width || '?') + 'x' + (settings.height || '?'));
+        } catch (e) {
+          setARDebug('Preview error: ' + (e && e.message ? e.message : e));
+          const errorMsg = e.name === 'NotAllowedError' 
+            ? 'Camera permission denied. Please allow camera access in your browser settings.'
+            : e.name === 'OverconstrainedError'
+            ? 'Requested camera mode not available. Try the other camera.'
+            : 'Camera error: ' + (e && e.message ? e.message : e);
+          setNavStatus(errorMsg);
+          throw e;
+        }
       }
-    }
 
-    cameraBtn.addEventListener("click", toggleCamera);
-    locationBtn.addEventListener("click", toggleLocation);
-
-    selectEl.addEventListener("change", () => {
-      updateInfo(selectEl.value);
-      setNavStatus("");
-    });
-
-    startBtn.addEventListener("click", () => {
-      const hasDestination = selectEl.value !== "";
-      const cameraReady = cameraCard.dataset.enabled === "true";
-      const locationReady = locationCard.dataset.enabled === "true";
-
-      if (!hasDestination) {
-        setNavStatus("Select a destination to begin.");
-        return;
+      async function switchCamera() {
+        // toggle facing and restart preview or MindAR accordingly
+        const newFacing = currentFacing === 'environment' ? 'user' : 'environment';
+        setARDebug('Switching camera from ' + currentFacing + ' to ' + newFacing);
+        
+        const switchBtn = document.getElementById('camera-switch');
+        if (switchBtn) switchBtn.disabled = true;
+        
+        try {
+          // if MindAR is running, restart it with new facing
+          if (mindarStarted) {
+            await stopMindAR();
+            await startMindAR(newFacing);
+          } else {
+            // otherwise restart preview
+            await startPreview(newFacing);
+          }
+          setNavStatus('Switched to ' + (newFacing === 'environment' ? 'back' : 'front') + ' camera');
+        } catch (e) {
+          setARDebug('Switch camera error: ' + (e && e.message ? e.message : e));
+          setNavStatus('Failed to switch camera: ' + (e && e.message ? e.message : e));
+          console.error('Failed to switch camera', e);
+        } finally {
+          if (switchBtn) switchBtn.disabled = false;
+        }
       }
-      if (!cameraReady || !locationReady) {
-        setNavStatus("Enable camera and GPS permissions to continue.");
-        return;
+
+      function disableLocationTracking(message) {
+        if (locationWatchId !== null && navigator.geolocation && typeof navigator.geolocation.clearWatch === "function") {
+          navigator.geolocation.clearWatch(locationWatchId);
+          locationWatchId = null;
+        }
+        setPermissionState(locationCard, locationStatus, false);
+        locationReading.textContent = "";
+        locationBtn.disabled = false;
+        locationBtn.textContent = "Enable GPS";
+        if (message) {
+          setNavStatus(message);
+        }
       }
-      setNavStatus("AR Navigation simulated — follow the on-screen arrows!", true);
-    });
 
-    populateOptions();
-    const params = new URLSearchParams(window.location.search);
-    const initialDestination = params.get("destination");
-    if (initialDestination && locations.some(loc => loc.id === initialDestination)) {
-      selectEl.value = initialDestination;
-      updateInfo(initialDestination);
-    }
+      function toggleLocation() {
+        if (locationCard.dataset.enabled === "true") {
+          disableLocationTracking("GPS tracking disabled.");
+          return;
+        }
+        if (!navigator.geolocation) {
+          setNavStatus("Geolocation is not supported in this browser.");
+          return;
+        }
+        locationBtn.disabled = true;
+        locationBtn.textContent = "Requesting...";
+        setNavStatus("");
+        try {
+          locationWatchId = navigator.geolocation.watchPosition(
+            (position) => {
+              const { latitude, longitude, accuracy } = position.coords;
+              const firstFix = locationCard.dataset.enabled !== "true";
+              if (firstFix) {
+                setPermissionState(locationCard, locationStatus, true);
+                setNavStatus("GPS tracking enabled.");
+              }
+              locationBtn.disabled = false;
+              locationBtn.textContent = "Disable GPS";
+              locationReading.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)} (Â±${Math.round(accuracy)}m)`;
+            },
+            (error) => {
+              disableLocationTracking(`Location error: ${error.message}`);
+            },
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+          );
+        } catch (error) {
+          disableLocationTracking(`Location error: ${error.message}`);
+        }
+      }
 
-    window.addEventListener("beforeunload", () => {
-      disableCameraStream();
-      disableLocationTracking();
-    });
-  </script>
-</body>
+      cameraBtn.addEventListener("click", toggleCamera);
+    const cameraSwitchBtn = document.getElementById('camera-switch');
+    if (cameraSwitchBtn) cameraSwitchBtn.addEventListener('click', switchCamera);
+      locationBtn.addEventListener("click", toggleLocation);
+
+      selectEl.addEventListener("change", () => {
+        updateInfo(selectEl.value);
+        setNavStatus("");
+      });
+
+      startBtn.addEventListener("click", async () => {
+        const hasDestination = selectEl.value !== "";
+        const cameraReady = cameraCard.dataset.enabled === "true";
+        const locationReady = locationCard.dataset.enabled === "true";
+
+        if (!hasDestination) {
+          setNavStatus("Select a destination to begin.");
+          return;
+        }
+        if (!cameraReady || !locationReady) {
+          setNavStatus("Enable camera and GPS permissions to continue.");
+          return;
+        }
+        // Start MindAR with the selected facing if not already started
+        try {
+          if (!mindarStarted) {
+            setNavStatus('Starting AR session...');
+            await startMindAR(currentFacing);
+          }
+          setNavStatus("AR Navigation started â€” follow the on-screen arrows!", true);
+        } catch (e) {
+          setNavStatus('AR start error: ' + (e && e.message ? e.message : e));
+        }
+      });
+
+      populateOptions();
+      const params = new URLSearchParams(window.location.search);
+      const initialDestination = params.get("destination");
+      if (initialDestination && locations.some(loc => loc.id === initialDestination)) {
+        selectEl.value = initialDestination;
+        updateInfo(initialDestination);
+      }
+
+      window.addEventListener("beforeunload", () => {
+        disableCameraStream();
+        disableLocationTracking();
+      });
+
+      // MindAR integration variables and helpers
+      let mindarThree = null;
+      let mindarStarted = false;
+
+      async function startMindAR() {
+        // Use relative path that works in both local and production
+        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        const targetFile = basePath + 'assets/libs/targets.mind';
+        setARDebug('Using target file: ' + targetFile);
+        setARDebug('Base path: ' + basePath);
+        
+        const container = document.getElementById("mindar-container");
+        setARDebug('startMindAR invoked');
+        
+        if (!container) {
+          setNavStatus("MindAR container not found in DOM.");
+          throw new Error("MindAR container not found");
+        }
+
+        // Check if libraries are loaded
+        if (typeof THREE === 'undefined') {
+          setARDebug('THREE is not defined - library not loaded');
+          setNavStatus('THREE.js library not loaded. Please refresh the page.');
+          throw new Error('THREE.js not loaded');
+        }
+        
+        if (!window.MINDAR || !window.MINDAR.IMAGE) {
+          setARDebug('MINDAR is not defined - library not loaded');
+          setNavStatus('MindAR library not loaded. Please refresh the page.');
+          throw new Error('MindAR not loaded');
+        }
+
+        // Check if target file exists
+        try {
+          setARDebug('Checking target file availability...');
+          const checkResponse = await fetch(targetFile, { method: 'HEAD' });
+          setARDebug('Target file check: ' + checkResponse.status + ' ' + checkResponse.statusText);
+          if (!checkResponse.ok) {
+            setNavStatus('⚠️ Target file not found at: ' + targetFile);
+            setARDebug('Make sure assets/libs/targets.mind is uploaded to your web server');
+          }
+        } catch (e) {
+          setARDebug('Target file check error: ' + e.message);
+        }
+
+        // Show container and hide placeholder
+        container.style.display = "block";
+        cameraPlaceholder.hidden = true;
+        setARDebug('Libraries loaded successfully');
+        setARDebug('Initializing MindAR...');
+
+        try {
+          mindarThree = new window.MINDAR.IMAGE.MindARThree({
+            container: container,
+            imageTargetSrc: targetFile,
+            maxTrack: 1,
+          });
+          setARDebug('MindARThree instance created');
+        } catch (e) {
+          setARDebug('MindARThree creation error: ' + e.message);
+          throw e;
+        }
+
+        const { renderer, scene, camera } = mindarThree;
+        const anchor = mindarThree.addAnchor(0);
+
+        // simple visible plane when target is found
+        const geometry = new THREE.PlaneGeometry(1, 0.5);
+        const material = new THREE.MeshBasicMaterial({ color: 0x004aad, opacity: 0.9, transparent: true });
+        const plane = new THREE.Mesh(geometry, material);
+        plane.position.set(0, 0, 0);
+        plane.visible = false;
+        anchor.group.add(plane);
+
+        anchor.onTargetFound = () => {
+          plane.visible = true;
+          setPermissionState(cameraCard, cameraStatus, true);
+          if (typeof setNavStatus === "function") setNavStatus("Main Building detected â€” matching target image.", true);
+        };
+        anchor.onTargetLost = () => {
+          plane.visible = false;
+          setPermissionState(cameraCard, cameraStatus, false);
+          if (typeof setNavStatus === "function") setNavStatus("");
+        };
+
+        try {
+          setARDebug('Starting MindAR tracking...');
+          await mindarThree.start();
+          setARDebug('MindAR started successfully');
+          renderer.setAnimationLoop(() => {
+            renderer.render(scene, camera);
+          });
+          mindarStarted = true;
+          setNavStatus('AR tracking active. Point camera at target image.', true);
+        } catch (err) {
+          // cleanup on failure
+          setARDebug('MindAR start error: ' + (err.message || err));
+          console.error('MindAR start failed:', err);
+          try { await mindarThree.stop(); } catch (e) {}
+          container.style.display = "none";
+          cameraPlaceholder.hidden = false;
+          mindarThree = null;
+          mindarStarted = false;
+          
+          let errorMsg = 'AR initialization failed: ';
+          if (err.message && err.message.includes('target')) {
+            errorMsg += 'Target file error. Check debug panel.';
+          } else if (err.message && err.message.includes('camera')) {
+            errorMsg += 'Camera access error. Please enable camera.';
+          } else {
+            errorMsg += (err.message || err);
+          }
+          setNavStatus(errorMsg);
+          throw err;
+        }
+      }
+
+      async function stopMindAR() {
+        if (mindarThree && mindarStarted) {
+          try {
+            await mindarThree.stop();
+          } catch (e) {}
+          mindarThree.renderer.setAnimationLoop(null);
+          mindarThree = null;
+        }
+        mindarStarted = false;
+        const container = document.getElementById("mindar-container");
+        if (container) container.style.display = "none";
+        cameraPlaceholder.hidden = false;
+        setPermissionState(cameraCard, cameraStatus, false);
+      }
+
+      // Update camera controls to use MindAR instead of direct getUserMedia when enabled
+      async function toggleCamera() {
+        if (cameraCard.dataset.enabled === "true") {
+          // Disable camera and AR
+          await stopMindAR();
+          disableCameraStream("Camera access disabled");
+          return;
+        }
+
+        // Check secure context
+        if (!checkSecureContext()) {
+          setNavStatus('⚠️ Camera requires HTTPS connection. This page must be served over HTTPS (https://) to access camera on mobile devices.');
+          setARDebug('Please ensure your web hosting uses HTTPS/SSL certificate');
+          return;
+        }
+
+        // Enable camera and AR
+        cameraBtn.disabled = true;
+        cameraBtn.textContent = "Enabling...";
+        setNavStatus("");
+
+        try {
+          // Check available cameras
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoDevices = devices.filter(d => d.kind === 'videoinput');
+          setARDebug('Found ' + videoDevices.length + ' camera(s)');
+          
+          // Start preview first
+          await startPreview(currentFacing);
+          setPermissionState(cameraCard, cameraStatus, true);
+          cameraBtn.textContent = "Disable Camera";
+          setNavStatus("Camera enabled. Click 'Start AR Navigation' to begin tracking.");
+        } catch (e) {
+          // On failure, reset camera state
+          disableCameraStream();
+          let errorMsg;
+          if (e.name === 'NotAllowedError') {
+            errorMsg = 'Camera permission denied. Please allow camera access and try again.';
+          } else if (e.name === 'NotFoundError') {
+            errorMsg = 'No camera found on this device.';
+          } else if (e.name === 'NotReadableError') {
+            errorMsg = 'Camera is already in use by another application.';
+          } else {
+            errorMsg = 'Camera error: ' + (e.message || e);
+          }
+          setNavStatus(errorMsg);
+          setARDebug('Camera error: ' + e.name + ' - ' + (e.message || e));
+        } finally {
+          cameraBtn.disabled = false;
+        }
+      }
+    </script>
+  </body>
 </html>

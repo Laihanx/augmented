@@ -35,7 +35,7 @@
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     }
-    .nav {
+    .nav-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 18px 24px;
@@ -44,10 +44,27 @@
       justify-content: space-between;
       gap: 18px;
     }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .nav-links a:hover { color: var(--primary); }
     .brand {
       font-weight: 700;
       color: var(--primary);
       font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+      display: inline-block;
     }
     nav {
       display: flex;
@@ -218,8 +235,8 @@
       .map-card { position: sticky; top: 110px; }
     }
     @media (max-width: 767px) {
-      nav { display: none; }
-      .nav { padding: 16px; }
+      .nav-links { display: none; }
+      .nav-container { padding: 16px; }
       main { padding: 32px 18px 60px; }
       .card { border-radius: 14px; }
       .location-card { padding: 20px; }
@@ -228,16 +245,79 @@
 </head>
 <body>
   <header>
-    <div class="nav">
-      <a class="brand" href="index.html">DLSJBC Campus Navigator</a>
-      <nav>
-        <a href="index.html#features">Features</a>
-        <a href="index.html#how-it-works">How It Works</a>
-        <a href="ar-navigation.html">AR Navigation</a>
-      </nav>
-      <a class="btn" href="ar-navigation.html">Launch AR Mode</a>
-    </div>
+    <div id="site-nav-placeholder"></div>
   </header>
+  <script>
+    (async () => {
+      try {
+        const res = await fetch('navigation.html');
+        if (res.ok) {
+          const html = await res.text();
+          const placeholder = document.getElementById('site-nav-placeholder');
+          placeholder.innerHTML = html;
+
+          // Mark active nav link after injecting fragment
+          const setNavActive = () => {
+            const nav = placeholder.querySelector('.nav-links');
+            if (!nav) return;
+            const links = Array.from(nav.querySelectorAll('a[data-page]'));
+            const path = window.location.pathname.split('/').pop() || 'index.html';
+            const currentPage = path === '' ? 'index' : path.replace('.html', '');
+
+            const pageHasHashLinks = links.some(l => l.getAttribute('data-page') === currentPage && l.getAttribute('data-hash'));
+
+            links.forEach(a => {
+              const page = a.getAttribute('data-page');
+              const hash = a.getAttribute('data-hash');
+              let active = false;
+
+              if (page === currentPage) {
+                if (hash) {
+                  active = (window.location.hash === hash);
+                } else {
+                  if (!pageHasHashLinks) {
+                    active = (window.location.hash === '' || window.location.hash === '#');
+                  } else {
+                    active = false;
+                  }
+                }
+              }
+
+              if (active) a.setAttribute('data-active', 'true'); else a.removeAttribute('data-active');
+            });
+          };
+
+          setNavActive();
+          window.addEventListener('hashchange', setNavActive);
+          window.addEventListener('popstate', setNavActive);
+
+          // Attach nav toggle behavior for mobile
+          const attachNavToggle = () => {
+            const toggle = placeholder.querySelector('#nav-toggle');
+            const nav = placeholder.querySelector('.nav-links');
+            if (!toggle || !nav) return;
+            toggle.addEventListener('click', () => {
+              const isOpen = nav.getAttribute('data-open') === 'true';
+              nav.setAttribute('data-open', isOpen ? 'false' : 'true');
+              toggle.setAttribute('aria-expanded', String(!isOpen));
+            });
+            nav.querySelectorAll('a').forEach(a => {
+              a.addEventListener('click', () => {
+                nav.setAttribute('data-open', 'false');
+                toggle.setAttribute('aria-expanded', 'false');
+              });
+            });
+          };
+
+          attachNavToggle();
+        } else {
+          console.warn('Failed to load navigation fragment:', res.status);
+        }
+      } catch (e) {
+        console.warn('Navigation load error', e);
+      }
+    })();
+  </script>
 
   <main>
     <h1 style="font-size: clamp(2rem, 3.4vw, 3rem); margin-bottom: 24px;">Campus Map</h1>
@@ -387,7 +467,7 @@
   </main>
 
   <footer>
-    <small>&copy; 2024 DLSJBC Campus Navigator. All rights reserved.</small>
+    <small>&copy; 2025 DLSJBC Campus Navigator. All rights reserved.</small>
   </footer>
 </body>
 </html>

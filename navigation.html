@@ -1,0 +1,72 @@
+<style>
+  /* Navigation fragment local styles for active link highlighting */
+  .nav-links a {
+    color: inherit;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    font-weight: 500;
+  }
+  .nav-links a[data-active="true"] {
+    color: var(--primary);
+    background: rgba(0, 74, 173, 0.06);
+    box-shadow: 0 8px 20px rgba(0, 74, 173, 0.06);
+    font-weight: 700;
+  }
+  .nav-links a[data-active="true"]:hover {
+    color: var(--primary);
+  }
+
+  /* Responsive toggle styles */
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-toggle svg { width: 22px; height: 22px; fill: var(--primary); }
+
+  /* Mobile: hide full nav and show toggle */
+  @media (max-width: 767px) {
+    .nav-toggle { display: inline-flex; }
+    .nav-links {
+      position: absolute;
+      top: 64px;
+      right: 16px;
+      left: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--surface, #ffffff);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.08);
+      z-index: 50;
+    }
+    .nav-links[data-open="true"] { display: flex; }
+    .nav-links a { padding: 12px 14px; }
+    .nav-container { position: relative; }
+  }
+</style>
+
+<div class="nav-container">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.jpg" alt="DLSJBC logo" class="brand-logo">
+    DLSJBC Campus Navigator
+  </a>
+  <button id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </svg>
+  </button>
+  <nav class="nav-links">
+    <a href="index.html#features" data-page="index" data-hash="#features">Features</a>
+    <a href="index.html#how-it-works" data-page="index" data-hash="#how-it-works">How It Works</a>
+    <a href="map.html" data-page="map">Map</a>
+    <a href="ar-navigation.html" data-page="ar-navigation">AR Navigation</a>
+  </nav>
+</div>

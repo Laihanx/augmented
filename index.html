@@ -282,20 +282,85 @@
 </head>
 <body>
   <header>
-    <div class="nav-container">
-      <a class="brand" href="index.html">
-        <img src="assets/logo.jpg" alt="DLSJBC logo" class="brand-logo">
-        DLSJBC Campus Navigator
-      </a>
-      <nav class="nav-links">
-        <a href="index.html#features">Features</a>
-        <a href="index.html#how-it-works">How It Works</a>
-        <a href="map.html">Map</a>
-        <a href="ar-navigation.html">AR Navigation</a>
-      </nav>
-      <a class="btn btn-primary" href="ar-navigation.html">Launch AR</a>
-    </div>
+    <!-- Shared navigation will be injected here -->
+    <div id="site-nav-placeholder"></div>
   </header>
+  <script>
+    (async () => {
+      try {
+        const res = await fetch('navigation.html');
+        if (res.ok) {
+          const html = await res.text();
+          const placeholder = document.getElementById('site-nav-placeholder');
+          placeholder.innerHTML = html;
+
+          // After injecting the nav fragment, mark active nav link using data-page/data-hash
+          const setNavActive = () => {
+            const nav = placeholder.querySelector('.nav-links');
+            if (!nav) return;
+            const links = Array.from(nav.querySelectorAll('a[data-page]'));
+            const path = window.location.pathname.split('/').pop() || 'index.html';
+            const currentPage = path === '' ? 'index' : path.replace('.html', '');
+
+            // Determine if this page has any links that target hashes (e.g., index sections)
+            const pageHasHashLinks = links.some(l => l.getAttribute('data-page') === currentPage && l.getAttribute('data-hash'));
+
+            links.forEach(a => {
+              const page = a.getAttribute('data-page');
+              const hash = a.getAttribute('data-hash');
+              let active = false;
+
+              if (page === currentPage) {
+                if (hash) {
+                  // If link targets a hash, only activate when the hash matches exactly
+                  active = (window.location.hash === hash);
+                } else {
+                  // Link doesn't target a hash. Only activate it when there are no hash-targeting links
+                  // for this page and the URL has no hash.
+                  if (!pageHasHashLinks) {
+                    active = (window.location.hash === '' || window.location.hash === '#');
+                  } else {
+                    active = false;
+                  }
+                }
+              }
+
+              if (active) a.setAttribute('data-active', 'true'); else a.removeAttribute('data-active');
+            });
+          };
+
+          setNavActive();
+          window.addEventListener('hashchange', setNavActive);
+          window.addEventListener('popstate', setNavActive);
+
+          // Attach nav toggle behavior for mobile
+          const attachNavToggle = () => {
+            const toggle = placeholder.querySelector('#nav-toggle');
+            const nav = placeholder.querySelector('.nav-links');
+            if (!toggle || !nav) return;
+            toggle.addEventListener('click', () => {
+              const isOpen = nav.getAttribute('data-open') === 'true';
+              nav.setAttribute('data-open', isOpen ? 'false' : 'true');
+              toggle.setAttribute('aria-expanded', String(!isOpen));
+            });
+            // Close menu when a link is clicked (mobile)
+            nav.querySelectorAll('a').forEach(a => {
+              a.addEventListener('click', () => {
+                nav.setAttribute('data-open', 'false');
+                toggle.setAttribute('aria-expanded', 'false');
+              });
+            });
+          };
+
+          attachNavToggle();
+        } else {
+          console.warn('Failed to load navigation fragment:', res.status);
+        }
+      } catch (e) {
+        console.warn('Navigation load error', e);
+      }
+    })();
+  </script>
 
   <section class="hero">
     <div class="hero-inner">
